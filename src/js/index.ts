@@ -5,6 +5,10 @@ import { createScene } from './actions/sceneActions';
 import {store as initialStore} from './store';
 import { Mark } from './store/factory/Mark';
 import { Scene } from './store/factory/marks/Scene';
+import * as dsUtils from './util/dataset-utils';
+import {Pipeline} from './store/factory/Pipeline';
+import {Dataset} from './store/factory/Dataset';
+import {addPipeline} from './actions/pipelineActions';
 
 require('../scss/app.scss');
 
@@ -44,3 +48,23 @@ if (window.location.search.indexOf('record') > -1) {
 }
 
 (global as any).vega = vega;
+
+(global as any).addData = (name: string, data: string) => {
+  const parsed = dsUtils.parseRaw(data);
+
+  const values = parsed.values;
+
+  const pipeline = Pipeline({name});
+
+  const ds = Dataset({
+        name: name,
+        format: parsed.format,
+        _schema: dsUtils.schema(values)
+      });
+
+  addPipeline(pipeline, ds, values)(store.dispatch);
+}
+
+(global as any).getVegaSpec = () => {
+  return ctrl.export()
+}
